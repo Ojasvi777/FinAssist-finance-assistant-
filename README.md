@@ -14,18 +14,8 @@ Retrieving relevant context using FAISS
 Generating grounded responses using an LLM
 How It Works
 
+<img width="600" height="294" alt="image" src="https://github.com/user-attachments/assets/9647feb5-e04b-4756-bff3-cc594fbbbde5" />
 
-Web Scraping → Data Cleaning → Chunking → Embedding → FAISS Index
-                                              ↓
-                                         User Query
-                                              ↓
-                                      Query Embedding
-                                              ↓
-                                 Similarity Search (FAISS)
-                                              ↓
-                           Retrieve Relevant Context Chunks
-                                              ↓
-                          LLM Response Generation
 Tech Stack
 Python
 FAISS (vector similarity search)
