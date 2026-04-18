@@ -13,6 +13,8 @@ Converting it into semantic embeddings
 Retrieving relevant context using FAISS
 Generating grounded responses using an LLM
 How It Works
+
+
 Web Scraping → Data Cleaning → Chunking → Embedding → FAISS Index
                                               ↓
                                          User Query
@@ -30,22 +32,7 @@ FAISS (vector similarity search)
 Playwright (dynamic web scraping)
 Transformer-based embeddings
 OpenAI API (response generation)
-FastAPI (optional extension)
-Project Structure
-FinAssist-rag-finance-assistant-/
-│
-├── crawl.py              # Scrapes financial data using Playwright
-├── embed.py              # Converts text into embeddings
-├── build_index.py        # Builds FAISS vector index
-├── query_index.py        # Handles similarity search
-├── rag_pipeline.py       # End-to-end RAG pipeline
-├── seed_urls.json        # Input URLs for scraping
-├── requirements.txt
-│
-├── backend/              # API/backend logic (if implemented)
-├── scripts/              # Utility/helper scripts
-├── data/                 # Raw/processed data
-├── indexes/              # FAISS index (ignored in Git)
+
 Key Features
 Semantic search over unstructured financial data
 Fast retrieval using FAISS indexing
