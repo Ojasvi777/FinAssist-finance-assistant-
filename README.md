@@ -44,6 +44,7 @@ Reduces hallucinations in LLM outputs
 Improves factual accuracy
 Enables domain-specific querying
 Scales efficiently with large datasets
+
 Setup Instructions
 git clone https://github.com/YOUR_USERNAME/FinAssist-rag-finance-assistant-.git
 cd FinAssist-rag-finance-assistant-
@@ -54,6 +55,7 @@ python crawl.py
 python embed.py
 python build_index.py
 python rag_pipeline.py
+
 Example
 
 User Query:
