@@ -1,47 +1,133 @@
-from transformers import pipeline
-import faiss, pickle, os
+"""
+AmEx FinAssist - RAG pipeline.
+Loads a prebuilt FAISS index (built once via crawl.py + build_index.py) and
+answers questions using Gemini. No training or crawling happens at query time.
 
+Run directly for a terminal chat: python rag_pipeline.py
+Or import answer_question() from backend/app.py for the API.
+"""
+
+import os
+import faiss
+import pickle
 from sentence_transformers import SentenceTransformer
+from google import genai
+from dotenv import load_dotenv
 
-# Load FAISS index
-index = faiss.read_index("data/faiss_index/docs.index")
-with open("data/faiss_index/metadata.pkl", "rb") as f:
-    metadata = pickle.load(f)
+load_dotenv()
 
-# Embedding model (same as embed.py)
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+GEMINI_MODEL = "gemini-2.5-flash"
+
+INDEX_PATH = "data/index/faiss.index"
+META_PATH = "data/index/metadata.pkl"
+
+index = faiss.read_index(INDEX_PATH)
+with open(META_PATH, "rb") as f:
+    metadata = pickle.load(f)  # list of {"text":..., "url":..., "title":...}
+
 embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
-# Free HuggingFace QA model
-qa_model = pipeline("question-answering", model="deepset/roberta-base-squad2")
 
-def load_doc_content(meta_entry):
-    """Load text if metadata is a file path, else return the string directly"""
-    if os.path.exists(meta_entry):
-        with open(meta_entry, "r", encoding="utf-8") as f:
-            return f.read()
-    return meta_entry
+def _gen(prompt: str) -> str:
+    response = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
+    return response.text.strip()
 
-def search_docs(query, k=3):
-    query_vec = embed_model.encode([query])
+
+def search_docs(query: str, k: int = 4):
+    query_vec = embed_model.encode([query], convert_to_numpy=True)
+    faiss.normalize_L2(query_vec)  # must match how the index was built (cosine via IP)
     scores, indices = index.search(query_vec, k)
-    return [load_doc_content(metadata[i]) for i in indices[0]]
+    results = []
+    for i in indices[0]:
+        if i == -1:
+            continue
+        entry = metadata[i]
+        # Backward-compat: if metadata.pkl is stale (old plain-string format),
+        # wrap it so downstream code doesn't crash. Rebuild the index to fix properly.
+        if isinstance(entry, str):
+            entry = {"text": entry, "url": "", "title": "Unknown"}
+        results.append(entry)
+    return results
 
-def ask_question_free(query):
-    docs = search_docs(query, k=3)
-    context = "\n\n".join(docs)
 
-    result = qa_model(question=query, context=context)
+def condense_question(history: list, question: str) -> str:
+    """Rewrite a follow-up question into a standalone one using recent history."""
+    if not history:
+        return question
 
-    return result["answer"]
+    history_text = "\n".join(
+        f"User: {h['question']}\nAssistant: {h['answer']}" for h in history[-3:]
+    )
+    prompt = f"""Given this conversation history and a follow-up question, rewrite the
+follow-up as a standalone question that includes any needed context. Only output
+the rewritten question, nothing else.
+
+History:
+{history_text}
+
+Follow-up question: {question}
+
+Standalone question:"""
+
+    return _gen(prompt)
+
+
+def answer_question(query: str, history: list):
+    standalone_query = condense_question(history, query)
+    chunks = search_docs(standalone_query, k=4)
+
+    context = "\n\n---\n\n".join(
+        f"[Source: {c.get('title', 'Unknown')} - {c.get('url', '')}]\n{c['text']}"
+        for c in chunks
+    )
+
+    history_text = "\n".join(
+        f"User: {h['question']}\nAssistant: {h['answer']}" for h in history[-3:]
+    )
+
+    prompt = f"""You are AmEx FinAssist, a helpful assistant answering questions about
+American Express products using ONLY the context below. If the context doesn't
+contain the answer, say so clearly instead of guessing. Structure your answer
+with short paragraphs or bullet points where helpful.
+
+Conversation so far:
+{history_text}
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+
+    answer = _gen(prompt)
+    sources = list({c.get("url", "") for c in chunks if c.get("url")})
+    return answer, sources
+
+
+def main():
+    print("AmEx FinAssist — ask a question (type 'exit' to quit)\n")
+    history = []
+
+    while True:
+        query = input("You: ").strip()
+        if not query:
+            continue
+        if query.lower() in ("exit", "quit"):
+            break
+
+        answer, sources = answer_question(query, history)
+
+        print(f"\nAssistant: {answer}")
+        if sources:
+            print("\nSources:")
+            for s in sources:
+                print(f"  - {s}")
+        print()
+
+        history.append({"question": query, "answer": answer})
 
 
 if __name__ == "__main__":
-    while True:
-        query = input("\n❓ Ask a question (or type 'exit'): ").strip()
-        if not query:  # user just pressed enter
-            print("⚠️ Please enter a question or type 'exit'")
-            continue
-        if query.lower() == "exit":
-            break
-        answer = ask_question_free(query)
-        print(f"\n💡 Answer: {answer}\n")
+    main()

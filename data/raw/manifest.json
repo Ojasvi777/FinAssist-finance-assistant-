@@ -1,0 +1,42 @@
+[
+  {
+    "file": "page_1.txt",
+    "url": "https://www.americanexpress.com/en-in/rewards/membership-rewards/",
+    "title": "Log In to My Account | American Express US"
+  },
+  {
+    "file": "page_2.txt",
+    "url": "https://www.americanexpress.com/in/credit-cards/",
+    "title": "Credit Card | Indian Credit Cards | AMEX IN"
+  },
+  {
+    "file": "page_3.txt",
+    "url": "https://www.americanexpress.com/in/benefits/",
+    "title": "Card Member Benefits and Offers | American Express IN"
+  },
+  {
+    "file": "page_4.txt",
+    "url": "https://www.americanexpress.com/en-in/benefits/amex-offers/",
+    "title": "Offers | American Express IN"
+  },
+  {
+    "file": "page_5.txt",
+    "url": "https://www.americanexpress.com/in/customer-service/account-management/",
+    "title": "Account Management | Learn More | American Express India"
+  },
+  {
+    "file": "page_6.txt",
+    "url": "https://www.americanexpress.com/in/customer-service/payments-statements-and-balance/",
+    "title": "Payments, Statements and Balance FAQs | American Express IN"
+  },
+  {
+    "file": "page_7.txt",
+    "url": "https://www.americanexpress.com/in/customer-service/security-and-fraud/",
+    "title": "Security and Fraud | Learn More | American Express India"
+  },
+  {
+    "file": "page_8.txt",
+    "url": "https://www.americanexpress.com/in/charge-cards/platinum-card/",
+    "title": "Platinum Charge Card| American Express India"
+  }
+]

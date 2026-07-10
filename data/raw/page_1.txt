@@ -1,10 +1,11 @@
-<p>Skip to main content
+<p>Skip to main
 My Account
 Cards
 Banking
 Travel
 Rewards &amp; Benefits
 Business
+Search Button
 Customer Service
 Log In
 Log In to My Account
@@ -37,8 +38,10 @@ FICO® Score and Insights
 CreditSecure®
 Accept Amex Cards
 Refer A Friend
+SpendSmart®
 ADDITIONAL INFORMATION
 Credit Intel – Financial Education Center
+Amex Business Intel™ - B2B Education Center
 Supplier Code of Conduct
 Credit Score 101
 Frequently Asked Questions
@@ -47,6 +50,6 @@ Terms of ServicePrivacy CenterDo Not Sell or Share My Personal InformationAdChoi
 
 All users of our online services are subject to our Privacy Statement and agree to be bound by the Terms of Service. Please review.
 
-© 2025 American Express. All rights reserved
+© 2026 American Express. All rights reserved
 
 Give Feedback</p>
