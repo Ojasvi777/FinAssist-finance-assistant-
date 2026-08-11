@@ -1,62 +1,81 @@
 import os
+import json
 import faiss
 import pickle
-from openai import OpenAI
 from sentence_transformers import SentenceTransformer
 
-# choose one: either OpenAI or local embedding model
-USE_OPENAI = False  
-
 DATA_DIR = "data/raw"
+MANIFEST_PATH = os.path.join(DATA_DIR, "manifest.json")
 INDEX_PATH = "data/index/faiss.index"
 META_PATH = "data/index/metadata.pkl"
 
 os.makedirs("data/index", exist_ok=True)
 
-def load_raw_files():
-    texts = []
-    for fname in os.listdir(DATA_DIR):
-        if fname.endswith(".txt"):
-            with open(os.path.join(DATA_DIR, fname), "r", encoding="utf-8") as f:
-                texts.append(f.read())
-    return texts
 
-def chunk_text(text, max_len=500):
+def chunk_text(text, chunk_size=300, overlap=50):
+    """Split text into overlapping word chunks so context isn't lost at boundaries."""
     words = text.split()
     chunks = []
-    cur = []
-    for w in words:
-        cur.append(w)
-        if len(cur) > max_len:
-            chunks.append(" ".join(cur))
-            cur = []
-    if cur:
-        chunks.append(" ".join(cur))
+    start = 0
+    while start < len(words):
+        end = start + chunk_size
+        chunks.append(" ".join(words[start:end]))
+        start = end - overlap  # step back by the overlap amount
+        if start <= 0 and end >= len(words):
+            break
     return chunks
 
+
+def load_manifest_entries():
+    with open(MANIFEST_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def build_index():
-    texts = load_raw_files()
-    chunks = []
-    for txt in texts:
-        chunks.extend(chunk_text(txt))
+    entries = load_manifest_entries()
 
-    if USE_OPENAI:
-        client = OpenAI()
-        vectors = [client.embeddings.create(input=c, model="text-embedding-3-small").data[0].embedding for c in chunks]
-    else:
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-        vectors = model.encode(chunks, show_progress_bar=True)
+    metadata = []
+    for entry in entries:
+        file_path = os.path.join(DATA_DIR, entry["file"])
+        if not os.path.exists(file_path):
+            continue
+        with open(file_path, "r", encoding="utf-8") as f:
+            text = f.read()
 
-    dim = len(vectors[0])
-    index = faiss.IndexFlatL2(dim)
+        for chunk in chunk_text(text):
+            if len(chunk.strip()) < 20:
+                continue
+            metadata.append({
+                "text": chunk,
+                "url": entry["url"],
+                "title": entry["title"],
+            })
+
+    if not metadata:
+        print("No chunks found. Did you run crawl.py first?")
+        return
+
+    print(f"Embedding {len(metadata)} chunks...")
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    vectors = model.encode(
+        [m["text"] for m in metadata],
+        show_progress_bar=True,
+        convert_to_numpy=True,
+    )
+
+    # Normalize so we can use cosine similarity via inner product
+    faiss.normalize_L2(vectors)
+
+    dim = vectors.shape[1]
+    index = faiss.IndexFlatIP(dim)
     index.add(vectors)
 
-    # save index + metadata
     faiss.write_index(index, INDEX_PATH)
     with open(META_PATH, "wb") as f:
-        pickle.dump(chunks, f)
+        pickle.dump(metadata, f)
 
-    print(f"✅ Index built with {len(chunks)} chunks")
+    print(f"Index built with {len(metadata)} chunks -> {INDEX_PATH}")
+
 
 if __name__ == "__main__":
     build_index()

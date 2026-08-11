@@ -1,0 +1,133 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+model User {
+  id               String             @id @default(uuid())
+  email            String             @unique
+  passwordHash     String
+  name             String?
+  avatar           String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  conversations    Conversation[]
+  expenses         Expense[]
+  transactions     Transaction[]
+  creditCards      CreditCard[]
+  rewardHistory    RewardHistory[]
+  optimizerHistory OptimizerHistory[]
+  savedPrompts     SavedPrompt[]
+  settings         Settings?
+  sessions         Session[]
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  title     String
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isPinned  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  text           String
+  sender         String       // "user" | "assistant"
+  timestamp      DateTime     @default(now())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sources        Json?        // Stores array of SourceMetadata: [{ text, title, url, score, confidence, page, citation }]
+}
+
+model Expense {
+  id             String      @id @default(uuid())
+  description    String
+  amount         Float
+  category       String
+  date           String
+  paymentMethod  String      @default("Cash")
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id             String      @id @default(uuid())
+  merchant       String
+  amount         Float
+  category       String
+  date           String
+  paymentMethod  String
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CreditCard {
+  id             String          @id @default(uuid())
+  holderName     String          @default("Demo User")
+  cardNumber     String
+  expiry         String
+  cvv            String
+  limit          Float
+  cardType       String          // "Platinum" | "Gold" | "Blue Cash" | "Everyday"
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardHistory  RewardHistory[]
+}
+
+model RewardHistory {
+  id             String      @id @default(uuid())
+  points         Int
+  description    String
+  date           String
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creditCardId   String?
+  creditCard     CreditCard? @relation(fields: [creditCardId], references: [id], onDelete: SetNull)
+}
+
+model OptimizerHistory {
+  id             String      @id @default(uuid())
+  query          String
+  parsedAmount   Float
+  parsedCategory String
+  bestCard       String
+  pointsEarned   Int
+  date           String
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SavedPrompt {
+  id        String   @id @default(uuid())
+  label     String
+  text      String
+  category  String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Settings {
+  id                   String   @id @default(uuid())
+  theme                String   @default("dark")
+  defaultCardId        String?
+  notificationsEnabled Boolean  @default(true)
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
