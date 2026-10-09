@@ -1,42 +1,57 @@
 [
   {
     "file": "page_1.txt",
-    "url": "https://www.americanexpress.com/en-in/rewards/membership-rewards/",
-    "title": "Log In to My Account | American Express US"
+    "url": "https://www.americanexpress.com/en-us/rewards/membership-rewards/",
+    "title": "Membership Rewards Overview & Benefits"
   },
   {
     "file": "page_2.txt",
     "url": "https://www.americanexpress.com/in/credit-cards/",
-    "title": "Credit Card | Indian Credit Cards | AMEX IN"
+    "title": "Credit Cards & Charge Cards Overview"
   },
   {
     "file": "page_3.txt",
     "url": "https://www.americanexpress.com/in/benefits/",
-    "title": "Card Member Benefits and Offers | American Express IN"
+    "title": "Card Member Benefits & Special Offers"
   },
   {
     "file": "page_4.txt",
     "url": "https://www.americanexpress.com/en-in/benefits/amex-offers/",
-    "title": "Offers | American Express IN"
+    "title": "AmEx Offers Hub & Promotional Discounts"
   },
   {
     "file": "page_5.txt",
     "url": "https://www.americanexpress.com/in/customer-service/account-management/",
-    "title": "Account Management | Learn More | American Express India"
+    "title": "Account Management & Servicing Guidelines"
   },
   {
     "file": "page_6.txt",
     "url": "https://www.americanexpress.com/in/customer-service/payments-statements-and-balance/",
-    "title": "Payments, Statements and Balance FAQs | American Express IN"
+    "title": "Payments, Statements & Balance FAQs"
   },
   {
     "file": "page_7.txt",
     "url": "https://www.americanexpress.com/in/customer-service/security-and-fraud/",
-    "title": "Security and Fraud | Learn More | American Express India"
+    "title": "Security, Fraud Protection & Safe Shopping"
   },
   {
     "file": "page_8.txt",
     "url": "https://www.americanexpress.com/in/charge-cards/platinum-card/",
-    "title": "Platinum Charge Card| American Express India"
+    "title": "Platinum Charge Card Privileges & Terms"
+  },
+  {
+    "file": "page_9.txt",
+    "url": "https://www.americanexpress.com/us/credit-cards/card/gold-card/",
+    "title": "AmEx Gold Card 4X Rewards & Benefit Guide"
+  },
+  {
+    "file": "page_10.txt",
+    "url": "https://www.americanexpress.com/us/rewards/multipliers-optimization/",
+    "title": "Membership Rewards Multiplier & Optimization Guide"
+  },
+  {
+    "file": "page_11.txt",
+    "url": "https://www.americanexpress.com/us/travel/lounge-access/centurion-lounge/",
+    "title": "AmEx Centurion Lounge Access Terms & Guidelines"
   }
 ]

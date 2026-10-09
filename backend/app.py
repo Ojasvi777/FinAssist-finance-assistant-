@@ -357,7 +357,10 @@ def get_sources_status():
         "vectorSearchIndex": "faiss.index",
         "dimensionSize": 384,
         "loadedDocumentsCount": 15,
-        "provider": "Facebook AI Similarity Search (FAISS)"
+        "provider": "Facebook AI Similarity Search (FAISS)",
+        "ragArchitecture": "Bayesian Retrieval-Augmented Generation (Bayesian RAG)",
+        "bayesianSampling": "Monte Carlo Dropout (N=10)",
+        "uncertaintyQuantification": "Epistemic & Conjugate Beta Posterior Update"
     }
 
 @app.get("/health")

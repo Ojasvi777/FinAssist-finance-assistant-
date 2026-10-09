@@ -69,6 +69,32 @@ class SQLiteRepository(BaseRepository):
             )
         """)
 
+        # Auto-migration for legacy DB schemas missing user_id column
+        cursor.execute("PRAGMA table_info(expenses)")
+        cols = [row[1] for row in cursor.fetchall()]
+        if cols and "user_id" not in cols:
+            cursor.execute("ALTER TABLE expenses ADD COLUMN user_id TEXT DEFAULT 'legacy_user'")
+
+        cursor.execute("PRAGMA table_info(conversations)")
+        cols = [row[1] for row in cursor.fetchall()]
+        if cols and "user_id" not in cols:
+            cursor.execute("ALTER TABLE conversations ADD COLUMN user_id TEXT DEFAULT 'legacy_user'")
+
+        cursor.execute("PRAGMA table_info(credit_cards)")
+        cols = [row[1] for row in cursor.fetchall()]
+        if cols and "user_id" not in cols:
+            cursor.execute("ALTER TABLE credit_cards ADD COLUMN user_id TEXT DEFAULT 'legacy_user'")
+
+        cursor.execute("PRAGMA table_info(reward_history)")
+        cols = [row[1] for row in cursor.fetchall()]
+        if cols and "user_id" not in cols:
+            cursor.execute("ALTER TABLE reward_history ADD COLUMN user_id TEXT DEFAULT 'legacy_user'")
+
+        cursor.execute("PRAGMA table_info(settings)")
+        cols = [row[1] for row in cursor.fetchall()]
+        if cols and "user_id" not in cols:
+            cursor.execute("ALTER TABLE settings ADD COLUMN user_id TEXT DEFAULT 'legacy_user'")
+
         # 5. Credit Cards Table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS credit_cards (

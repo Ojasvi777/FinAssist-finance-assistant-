@@ -1,0 +1,408 @@
+================================================================================
+           NUTANIX SYSTEMS RELIABILITY ENGINEER (SRE) MASTER SYLLABUS
+================================================================================
+Exam Characteristics: 50–60 MCQs | 60–70 Mins | Single & Multi-Option Select
+Focus: Breadth & Deep Mechanics across Networking, Linux, OS, Virtualization
+================================================================================
+
+--------------------------------------------------------------------------------
+SECTION 1: COMPUTER NETWORKING & INFRASTRUCTURE PROTOCOLS
+--------------------------------------------------------------------------------
+1.1 OSI & TCP/IP Stack Mechanics
+    - Physical (L1): PDU = Bit. NRZ, Manchester encoding, attenuation, crosstalk, duplex modes (Half vs Full)
+    - Data Link (L2): PDU = Frame. Frame structure (Preamble, SFD, Src/Dst MAC, EtherType, Payload, FCS/CRC)
+    - Network (L3): PDU = Packet. IPv4 header breakdown (Version, IHL, TOS, Total Length, Identification, Flags [DF/MF], Fragment Offset, TTL, Protocol, Header Checksum, Src/Dst IP)
+    - Transport (L4): PDU = Segment. Port numbers, multiplexing, demultiplexing, flow control, error recovery
+    - Application (L5-L7): Message formats, serialization, state maintenance
+
+1.2 Layer 2 Switching, Ethernet, & L2 Protocols
+    - MAC Address: Structure (48-bit hex), OUI (first 24 bits), NIC identifier (last 24 bits), Broadcast MAC (FF:FF:FF:FF:FF:FF)
+    - Switch Operations: MAC Address Table (CAM Table) lookup, Flooding (unknown unicast/broadcast), Learning (source MAC), Aging timer (default 300s)
+    - Broadcast Domain vs Collision Domain: Hub (1 broadcast, 1 collision) vs Switch (1 broadcast, N collisions) vs Router (N broadcast, N collisions)
+    - ARP (Address Resolution Protocol):
+      * ARP Request (Broadcast) vs ARP Reply (Unicast)
+      * ARP Cache Table inspection & poisoning/spoofing attacks
+      * Gratuitous ARP (GARP): Failover triggers, IP conflict detection
+      * Reverse ARP (RARP) vs Proxy ARP
+    - VLANs (Virtual Local Area Networks):
+      * IEEE 802.1Q Tagging: 4-byte header insertion, TPID (0x8100), Priority (PCP - 3 bits), DEI (1 bit), VLAN ID (12 bits -> 4096 VLANs max)
+      * Access Ports (untagged frames) vs Trunk Ports (tagged frames) vs Native VLAN (untagged on trunk)
+      * Inter-VLAN Routing: Router-on-a-Stick (subinterfaces) vs Layer 3 Switch (SVI - Switch Virtual Interface)
+    - STP (Spanning Tree Protocol - IEEE 802.1D):
+      * Purpose: Preventing Layer 2 switching loops and broadcast storms
+      * Root Bridge election (Lowest Bridge ID = Priority + MAC)
+      * Port states: Blocking, Listening, Learning, Forwarding, Disabled
+
+1.3 Layer 3 Routing & IP Addressing
+    - IPv4 Addressing & Subnetting:
+      * Address classes (Class A: 1-126, Class B: 128-191, Class C: 192-223, Class D Multicast: 224-239, Class E Experimental)
+      * Loopback IP range: 127.0.0.0/8
+      * Private IP Ranges (RFC 1918): 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+      * Link-Local / APIPA range: 169.254.0.0/16
+      * CIDR (Classless Inter-Domain Routing): VLSM (Variable Length Subnet Masking)
+      * Host count calculation: 2^(32 - prefix) - 2 (subtract network and broadcast)
+      * Subnet mask / Prefix bitwise ANDing to find Network ID
+    - IPv6 Fundamentals:
+      * 128-bit structure, 8 groups of 4 hex digits, zero compression rules (::)
+      * Unicast, Multicast, Anycast (No Broadcast in IPv6)
+      * Link-Local prefix (fe80::/10), Loopback (::1/128)
+      * Neighbor Discovery Protocol (NDP) replacing ARP (ICMPv6 Type 135/136)
+    - Routing Mechanisms:
+      * Longest Prefix Match rule in routing tables
+      * Default Gateway concept and metric / Administrative Distance (AD) comparisons
+      * Static Routing vs Dynamic Routing protocols (Distance Vector: RIP; Link-State: OSPF; Path-Vector: BGP)
+    - NAT (Network Address Translation) & Firewall:
+      * Static NAT (1-to-1 mapping) vs Dynamic NAT (1-to-Pool)
+      * PAT (Port Address Translation / NAT Overload): Utilizing source ephemeral ports
+      * SNAT (Source NAT - outbound traffic) vs DNAT (Destination NAT - port forwarding)
+      * Stateful vs Stateless Firewalls (Connection tracking / conntrack tables)
+
+1.4 Transport Protocols (TCP & UDP)
+    - TCP (Transmission Control Protocol) Header & State Machine:
+      * Header fields: Src/Dst Port, Sequence Number, Acknowledgment Number, Data Offset, Reserved, Flags, Window Size, Checksum, Urgent Pointer
+      * Flags: SYN, ACK, FIN, RST, PSH, URG, ECE, CWR
+      * 3-Way Handshake: SYN (seq=x) -> SYN-ACK (seq=y, ack=x+1) -> ACK (seq=x+1, ack=y+1)
+      * Connection Termination: 4-Way Teardown (FIN -> ACK -> FIN -> ACK) & TIME_WAIT state (2 * MSL)
+      * States: CLOSED, LISTEN, SYN-SENT, SYN-RECEIVED, ESTABLISHED, CLOSE-WAIT, LAST-ACK, FIN-WAIT-1, FIN-WAIT-2, CLOSING, TIME-WAIT
+      * Flow Control: Sliding Window Mechanism, Receiver Window (rwnd) zero-window probing
+      * Congestion Control: Slow Start, Congestion Avoidance, Fast Retransmit, Fast Recovery (cwnd parameters)
+      * Maximum Segment Size (MSS) vs Maximum Transmission Unit (MTU - default 1500 bytes)
+      * Path MTU Discovery (PMTUD) and ICMP Need to Fragment (Type 3, Code 4)
+    - UDP (User Datagram Protocol):
+      * 8-byte minimal header: Src Port, Dst Port, Length, Checksum
+      * Stateless, connectionless, unreliable, low overhead (ideal for DNS, DHCP, VoIP, Streaming)
+
+1.5 Application Protocols & Network Services
+    - DNS (Domain Name System):
+      * Hierarchical Tree: Root (.) -> TLD (.com, .org) -> Authoritative (example.com)
+      * Recursive Resolver vs Iterative Name Server queries
+      * Record Types: A (IPv4), AAAA (IPv6), CNAME (Canonical Alias), MX (Mail), PTR (Reverse IP lookup), NS (Name Server), SOA (Start of Authority), TXT (SPF/DKIM)
+      * DNS Caching, TTL (Time To Live) expiration, `/etc/resolv.conf`, `/etc/hosts` precedence (`/etc/nsswitch.conf`)
+      * Ports: UDP 53 (standard queries), TCP 53 (zone transfers & payloads > 512 bytes)
+    - DHCP (Dynamic Host Configuration Protocol):
+      * DORA Process: Discover (Broadcast) -> Offer (Unicast/Broadcast) -> Request (Broadcast) -> Acknowledge (Unicast/Broadcast)
+      * Ports: Server = UDP 67, Client = UDP 68
+      * DHCP Lease renewal sequence (T1 timer = 50% lease time request, T2 timer = 87.5% rebind attempt)
+      * DHCP Relay Agent (converting L2 broadcast to L3 unicast across routers)
+    - HTTP / HTTPS & TLS:
+      * Request Methods: GET, POST, PUT, DELETE, HEAD, OPTIONS, PATCH
+      * Status Codes: 1xx (Informational), 2xx (Success: 200 OK, 201 Created, 204 No Content), 3xx (Redirection: 301 Permanent, 302 Temporary, 304 Not Modified), 4xx (Client Error: 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found), 5xx (Server Error: 500 Internal, 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout)
+      * TLS 1.2 / 1.3 Handshake: Symmetric vs Asymmetric Encryption, PKI, Certificate Authority (CA), Client Hello, Server Hello, Key Exchange, Cipher Suites
+      * HTTP/1.1 (Persistent connections, Head-of-Line blocking) vs HTTP/2 (Multiplexing over single TCP connection, binary frames, header compression) vs HTTP/3 (QUIC over UDP)
+    - NTP (Network Time Protocol): UDP Port 123, Stratum levels (0 to 16), clock drift, importance in distributed consensus and system logs
+
+--------------------------------------------------------------------------------
+SECTION 2: LINUX SYSTEM ADMINISTRATION & UTILITIES
+--------------------------------------------------------------------------------
+2.1 Linux Architecture & Boot Sequence
+    - Kernel Space vs User Space separation (Ring 0 vs Ring 3 privileges)
+    - System Calls (syscalls) abstraction interface
+    - Boot Steps:
+      1. Hardware Initialization: BIOS / UEFI execution
+      2. MBR (Master Boot Record - 512 bytes: 446 bootloader + 64 partition table + 2 magic bytes) vs GPT (GUID Partition Table)
+      3. Bootloader: GRUB2 phase 1, 1.5, phase 2 loading configuration (`/boot/grub2/grub.cfg`)
+      4. Kernel Execution: Uncompressing vmlinuz, mounting initramfs / initrd temporary virtual root filesystem in memory
+      5. Init Execution: PID 1 process initialization (`systemd` or legacy SysVinit / `/sbin/init`)
+      6. Target/Runlevel reaching: multi-user.target (Runlevel 3), graphical.target (Runlevel 5)
+
+2.2 Filesystem, Inodes, & File Management
+    - Filesystem Hierarchy Standard (FHS):
+      * `/etc` (Configuration files), `/var` (Variable data, logs, spools), `/usr` (User binaries/libraries), `/proc` (Virtual filesystem exposing kernel stats), `/sys` (Virtual filesystem exposing hardware/driver state), `/dev` (Device nodes)
+    - Inode Mechanics:
+      * Metadata stored: File type, permissions, ownership (UID/GID), file size, timestamps (atime, mtime, ctime), block pointers
+      * Note: Inode does NOT store the filename (filename is mapped inside the parent directory table)
+      * Checking inode consumption: `df -i`
+    - Links:
+      * Hard Link: Points to the same Inode number on disk. Cannot span across different filesystems; cannot link directories. Deleting source file leaves link accessible
+      * Soft Link (Symbolic Link / Symlink): Points to the file path text string. Can span across filesystems; can link directories. Created via `ln -s target linkname`
+    - File Permissions & Masking:
+      * Representation: `rwx rwx rwx` (Owner, Group, Others) -> Binary/Octal values: r=4, w=2, x=1
+      * Special Permissions:
+        - SUID (Set Owner User ID - Octal 4000): Executes with file owner privileges (e.g., `/usr/bin/passwd`)
+        - SGID (Set Group ID - Octal 2000): Executes with file group privileges or inherits directory group on sub-files
+        - Sticky Bit (Octal 1000): Only file owner or root can delete files in folder (e.g., `/tmp`)
+      * umask (User File-Creation Mode Mask): Default file permission = 666 - umask; Default directory = 777 - umask (e.g., umask 022 gives 644 files, 755 directories)
+
+2.3 Linux Command-Line Utilities (Syntax, Flags, & Scenarios)
+    - File & Search Commands:
+      * `find /path -name "*.log" -mtime +7 -exec rm {} \;`
+      * `grep -i -r -n "ERROR" /var/log/` (i = case insensitive, r = recursive, n = line numbers)
+      * `awk '{print $1, $9}' access.log` (Column filtering and processing)
+      * `sed -i 's/old/new/g' file.txt` (In-place stream editing)
+      * `xargs`, `cut`, `sort`, `uniq -c` (Counting frequency of occurrences)
+    - Process Diagnostics & System Health:
+      * `ps aux` (a = all users, u = user format, x = processes without controlling tty) vs `ps -ef`
+      * `top` / `htop`: Interpreting VIRT (Virtual Memory), RES (Resident Memory), SHR (Shared Memory), CPU states (%us, %sy, %id, %wa [iowait])
+      * System Load Average: 3 numbers (1-min, 5-min, 15-min). Represents average number of runnable/uninterruptible threads in queue. Division by CPU core count gives load factor
+      * `kill -9 PID` (SIGKILL - uncatchable immediate termination) vs `kill -15 PID` (SIGTERM - graceful shutdown) vs `kill -1 PID` (SIGHUP - reload config)
+      * `nice -n -10 command` (Sets priority; values range -20 [highest priority] to 19 [lowest priority]) vs `renice`
+    - Disk & Storage Diagnostics:
+      * `df -h` (Human readable disk space per filesystem)
+      * `du -sh /path/*` (Directory space usage summary)
+      * `lsblk` (Block device listing), `fdisk -l`, `parted`
+      * `mount -o loop,ro device path`, `/etc/fstab` layout: `<file system> <mount point> <type> <options> <dump> <pass>`
+      * `iostat -xz 1` (Disk I/O utilization `%util`, `await`, `svctm`, read/write kB/s)
+    - Network Diagnostics & Socket Inspection:
+      * `ping -c 4 host` (ICMP Echo request/reply)
+      * `traceroute host` (Uses UDP/ICMP with incrementally increasing TTL [1, 2, 3...] to receive ICMP Time Exceeded packets)
+      * `netstat -tulnp` / `ss -tulnp` (t = TCP, u = UDP, l = listening, n = numeric IPs/ports, p = PID/program name)
+      * `tcpdump -i eth0 -n port 80 and host 192.168.1.5 -w capture.pcap`
+      * `nc -zv host 443` (Netcat port scanning / reachability test)
+      * `dig +short example.com MX` / `nslookup`
+      * `ip addr show`, `ip route show`, `ip neighbor` (replacing legacy `ifconfig`, `route -n`, `arp -a`)
+
+2.4 System Services & Logging
+    - `systemctl` syntax: `start`, `stop`, `restart`, `reload`, `status`, `enable`, `disable`, `is-active`, `daemon-reload`
+    - `journalctl` flags: `-u service_name`, `-f` (follow/tail), `--since "10 min ago"`, `-p err` (priority level)
+    - Log locations: `/var/log/messages`, `/var/log/syslog`, `/var/log/secure` or `/var/log/auth.log`, `/var/log/dmesg` (Kernel ring buffer)
+
+--------------------------------------------------------------------------------
+SECTION 3: OPERATING SYSTEM FUNDAMENTALS
+--------------------------------------------------------------------------------
+3.1 Process Management & CPU Scheduling
+    - Process vs Thread: Process has isolated virtual address space; Threads share memory/code space within same process but have independent registers and stack
+    - Process Control Block (PCB): Process State, PID, Program Counter, CPU registers, Memory management info, Open file descriptors list
+    - Process States:
+      * New -> Ready -> Running -> Waiting/Blocked -> Terminated
+      * Linux State Codes: `R` (Running/Runnable), `S` (Interruptible Sleep), `D` (Uninterruptible Sleep - usually waiting for disk I/O), `Z` (Zombie - terminated but parent hasn't read exit code via `wait()`), `T` (Stopped)
+    - Zombie Process Cleanup: Killed parent process, or adoption by PID 1 (`init`/`systemd`) to clean up PCB entry
+    - CPU Scheduling Algorithms:
+      * First-Come, First-Served (FCFS) - Convoy effect issue
+      * Shortest Job First (SJF) / Shortest Remaining Time First (SRTF) - Starvation issue
+      * Round Robin (RR) - Time Quantum dependency (too small = context switch overhead; too large = FCFS)
+      * Priority Scheduling & Multi-Level Feedback Queue (MLFQ)
+    - Context Switching: Saving CPU register states and reloading new PCB context. Causes CPU cache invalidation/flushing (TLB hit performance penalty)
+    - Inter-Process Communication (IPC): Anonymous Pipes (`|`), Named Pipes (FIFO), Signals, Shared Memory (fastest IPC), Message Queues, Sockets
+
+3.2 Memory Management & Virtual Memory
+    - Virtual Memory Concept: Decoupling physical RAM from process address space. Each process sees a contiguous virtual address space
+    - Paging & Page Tables:
+      * Virtual address split into: Page Number + Page Offset
+      * Page Table maps Virtual Page Number (VPN) to Physical Frame Number (PFN)
+      * Page Size: Typically 4KB (or HugePages: 2MB/1GB)
+    - Hardware Acceleration: Translation Lookaside Buffer (TLB) - CPU cache for fast Virtual-to-Physical translation
+    - Page Faults:
+      * Minor Page Fault: Requested page is in physical RAM but not mapped in process page table (e.g., shared library loading)
+      * Major Page Fault: Requested page is not in RAM, must read from disk swap space (causes disk I/O latency stall)
+    - Segmentation vs Paging: Variable-length contiguous memory blocks vs Fixed-size blocks
+    - Thrashing: System spends more time swapping pages in/out of disk than executing actual instructions due to overcommitted memory
+    - OOM (Out-Of-Memory) Killer: Linux kernel mechanism triggered when memory + swap is completely exhausted. Selects process with highest `oom_score` (calculated via badness algorithm) and sends `SIGKILL`
+
+3.3 Concurrency, Synchronization, & Deadlocks
+    - Critical Section Problem: Code segment accessing shared mutable state that must not be concurrently accessed by multiple threads
+    - Synchronization Primitives:
+      * Mutex (Mutual Exclusion Lock): Binary lock owned strictly by the acquiring thread
+      * Counting Semaphore: Integer counter. `wait()` / `P()` decrements; `signal()` / `V()` increments
+      * Spinlock: Thread busy-waits in a loop checking lock state (useful for very short wait times in kernel space; consumes CPU)
+    - Race Condition: Non-deterministic outcome resulting from timing dependencies of concurrent executions
+    - Deadlocks:
+      * 4 Necessary Conditions (Coffman Conditions):
+        1. Mutual Exclusion: At least one resource held in non-shareable mode
+        2. Hold and Wait: Thread holds resources while waiting for additional ones
+        3. No Preemption: Resources cannot be forcibly taken away until released
+        4. Circular Wait: Closed chain of threads where each thread waits for a resource held by the next
+      * Deadlock Handling: Ignorance (Ostrich algorithm), Prevention (breaking 1 of 4 conditions), Avoidance (Banker's Algorithm), Detection & Recovery (Resource Allocation Graph cycles)
+
+--------------------------------------------------------------------------------
+SECTION 4: VIRTUALIZATION & HYPERCONVERGED INFRASTRUCTURE (HCI)
+--------------------------------------------------------------------------------
+4.1 Hypervisor Architecture & Fundamentals
+    - Definition: Virtual Machine Monitor (VMM) managing physical CPU, RAM, Network, and Storage abstractions
+    - Type 1 Hypervisor (Bare-Metal):
+      * Installed directly on bare-metal hardware. Acts as the operating system kernel
+      * Examples: Nutanix AHV (Acropolis Hypervisor), VMware ESXi, KVM (Kernel-based Virtual Machine), Microsoft Hyper-V, Citrix Hypervisor
+      * Characteristics: Low overhead, high performance, enterprise data center deployment
+    - Type 2 Hypervisor (Hosted):
+      * Installed as an application on top of an existing host operating system
+      * Examples: Oracle VirtualBox, VMware Workstation / Fusion, Parallels
+      * Characteristics: Extra virtualization translation layer, higher latency, used for desktop/development
+    - CPU Virtualization: Intel VT-x / AMD-V extensions, Root / Non-root execution modes, Ring -1 concept
+    - Memory Virtualization:
+      * Extended Page Tables (EPT) / Nested Page Tables (NPT) - Hardware two-dimensional page lookup (Guest Virtual -> Guest Physical -> Host Physical)
+      * Memory Overcommit: Allocating total VM memory exceeding physical host RAM
+      * Memory Ballooning: Guest balloon driver inflates inside guest OS to reclaim unallocated RAM pages back to hypervisor
+
+4.2 Paravirtualization vs Full Virtualization vs Containers
+    - Full Virtualization: Guest OS is completely unaware it is virtualized; all hardware calls emulated via binary translation
+    - Paravirtualization: Guest OS is modified to know it is running on a hypervisor; uses specialized hypercalls (e.g., `virtio` network/block drivers in Linux) for near-native performance
+    - Containers vs VMs:
+      * VM: Virtualizes hardware layer. Each VM includes complete guest OS, kernel, binaries, and libraries (Heavyweight: Gigabytes)
+      * Container: Virtualizes OS layer. Shares host Linux kernel; isolated via user spaces (Lightweight: Megabytes)
+    - Linux Container Isolation Mechanisms:
+      * Namespaces (Isolation): `pid` (processes), `net` (network devices/routing), `mnt` (mount points), `ipc` (shared memory), `uts` (hostname), `user` (UID/GID mappings)
+      * cgroups / Control Groups (Resource Limiting): Restricting CPU, memory, disk I/O, network bandwidth allocation per container group
+
+4.3 Storage Virtualization & Hyperconverged Infrastructure (HCI)
+    - HCI Concept (Nutanix Primary Domain):
+      * Legacy 3-Tier Architecture: Separate Compute Servers + Fiber Channel Switch Network + Dedicated SAN/NAS Storage Array
+      * HCI Architecture: Unifies Compute, Storage, Networking, and Virtualization into a single scale-out software-defined node cluster
+    - Nutanix Architecture Breakdown:
+      * CVM (Controller VM): Dedicated VM running on every Nutanix node running storage management software
+      * Distributed Storage Fabric (DSF): Pools local SSDs/HDDs across all nodes into a unified cluster storage pool
+      * Nutanix AHV: Native Type 1 hypervisor integrated with Nutanix HCI stack (based on KVM)
+    - Virtual Disk Formats:
+      * RAW, QCOW2 (QEMU Copy-On-Write), VMDK (VMware), VHD / VHDX (Microsoft)
+      * Provisioning Types: Thin Provisioning (allocates disk space on demand as written) vs Thick Provisioning (pre-allocates entire disk space upfront)
+      * Snapshots: Redirect-on-Write (RoW) vs Copy-on-Write (CoW) metadata mechanisms
+
+--------------------------------------------------------------------------------
+SECTION 5: HARDWARE, STORAGE, & DISTRIBUTED CLOUD CONCEPTS
+--------------------------------------------------------------------------------
+5.1 Hardware Components & Storage Protocols
+    - Storage Drives:
+      * HDD (SATA/SAS): Spinning platters, read/write heads, seek time, latency measured in milliseconds
+      * SSD (SATA/NVMe): Flash NAND memory, no moving parts, latency measured in microseconds. IOPS (Input/Output Operations Per Second) metrics
+    - Storage Architecture Types:
+      * Block Storage (SAN - Storage Area Network): Exposes raw storage blocks via protocols like iSCSI, Fibre Channel (FC), NVMe-oF
+      * File Storage (NAS - Network Attached Storage): Exposes filesystems over network via protocols like NFS (Network File System) and SMB/CIFS (Server Message Block)
+      * Object Storage: RESTful API-driven flat structure (HTTP GET/PUT) using unique keys and metadata (e.g., AWS S3)
+    - RAID (Redundant Array of Independent Disks) Levels:
+      * RAID 0: Disk Striping. No redundancy/parity. High performance, 100% capacity utilization. 1 drive failure = total data loss
+      * RAID 1: Disk Mirroring. 50% capacity utilization. Requires min 2 drives. Can survive 1 drive failure
+      * RAID 5: Block-level Striping with Distributed Parity. Requires min 3 drives. Storage capacity = (N - 1) * Size. Can survive 1 drive failure
+      * RAID 6: Block-level Striping with Dual Distributed Parity. Requires min 4 drives. Capacity = (N - 2) * Size. Can survive 2 simultaneous drive failures
+      * RAID 10 (1+0): Striped set of Mirrored drives. Requires min 4 drives (even number). Excellent performance and fault tolerance
+
+5.2 Cloud Computing & High Availability
+    - Service Models:
+      * IaaS (Infrastructure as a Service): Virtual machines, raw storage, networks (e.g., AWS EC2, Nutanix Cloud Clusters)
+      * PaaS (Platform as a Service): Managed runtimes, databases, execution environments (e.g., Heroku, AWS Elastic Beanstalk)
+      * SaaS (Software as a Service): On-demand end-user software applications (e.g., Google Workspace, Salesforce)
+    - Deployment Models: Public Cloud, Private Cloud, Hybrid Cloud, Multi-Cloud
+    - High Availability (HA) & Disaster Recovery (DR) Metrics:
+      * RPO (Recovery Point Objective): Maximum acceptable data loss duration measured in time
+      * RTO (Recovery Time Objective): Maximum acceptable duration system can remain offline during an outage
+      * SLA (Service Level Agreement) vs SLO (Service Level Objective) vs SLI (Service Level Indicator):
+        - SLI: Quantifiable metric measuring service performance (e.g., HTTP request latency)
+        - SLO: Target value or range for an SLI defined in internal goal (e.g., 99.9% requests < 200ms)
+        - SLA: Legal contract with customer defining financial consequences if SLO is missed
+      * Load Balancing Mechanics:
+        - Layer 4 Load Balancer: Operates at TCP/UDP level. Routes traffic based on IP addresses and ports
+        - Layer 7 Load Balancer: Operates at Application level. Inspects HTTP headers, cookies, URL paths, TLS content
+        - Health Checks: Active probes (e.g., HTTP GET `/health`) to remove failing nodes from cluster pool
+================================================================================
+
+
+
+
+Claude
+
+
+Based on what's in this transcript, here's where things stand — though this looks like a partial paste (the jump from Networking Subtopic 4 to 5 suggests 1–3 happened earlier and weren't included here, so flag it if I'm missing something).
+
+## ✅ Covered so far
+
+**Virtualization**
+- Subtopic 1: Hypervisor Types (Type 1 vs Type 2, AHV classification) — done, 3/3 correct
+
+**Networking**
+- Subtopic 4: DNS (Recursive vs Iterative resolution, DHCP lease info) — done, 3/5 (gaps clarified: DHCP doesn't hand out MAC address; resolver is iterative toward upstream servers, recursive toward client)
+- Subtopic 5: Routing & Switching (VLANs, broadcast domains, NAT) — **in progress**, 5 questions posted, awaiting your answers
+
+## ⏳ Remaining (based on the five core topics from the checklist)
+
+**Networking**
+- Subnetting (CIDR, subnet math practice)
+- OSI vs TCP/IP model layers
+- ARP
+- Common ports/protocols (HTTP/S, SSH, FTP, DNS port, etc.)
+- (Possibly Subtopics 1–3 if not actually covered — let me know)
+
+**Operating Systems**
+- Process vs Thread
+- Scheduling algorithms
+- Memory management (paging, segmentation)
+- Deadlocks
+
+**Linux**
+- Boot process (BIOS/UEFI → bootloader → kernel → init)
+- Partition schemes (MBR vs GPT)
+- Troubleshooting commands (netstat, ss, iptables, journalctl, systemctl, df/du)
+
+**Virtualization**
+- VM vs Container (was queued as the next subtopic before the conversation moved to Networking)
+
+**Hardware / Cloud / Storage** (🟡 topics, not confirmed in past OAs but fair game per JD)
+- IPv4 vs IPv6 basics
+- Cloud computing fundamentals (public/private/hybrid, basic terminology)
+- Storage device basics
+
+---
+
+Given the OA is tomorrow, want to **finish Routing & Switching first** (you've got 5 questions pending), then I'd suggest we prioritize the 🔴 confirmed-heavy topics (Subnetting, OS fundamentals, Linux boot/commands) over the 🟡 nice-to-haves, given limited time. Should we pick up where we left off with the NAT/VLAN questions?
+
+
+
+
+Nutanix
+
+To understand how **Nutanix** views and builds hypervisors, you first need to step back from traditional virtualization (like standalone ESXi or Hyper-V) and look at the **Nutanix Hyperconverged Infrastructure (HCI)** philosophy.
+
+---
+
+## 1. The Fundamental Definition
+
+A **Hypervisor** (or Virtual Machine Monitor, VMM) is lightweight software or firmware that abstracts physical hardware (CPU, RAM, Storage, NIC) into isolated virtual environments called **Virtual Machines (VMs)**.
+
+* **Type 1 (Bare-Metal):** Installs directly on server hardware. Near-native speed, zero host OS bloat.
+* **Type 2 (Hosted):** Installs on top of a host OS (like running VirtualBox on Windows). Higher overhead.
+
+---
+
+## 2. The Nutanix Philosophy: "Making the Hypervisor Invisible"
+
+In legacy 3-tier IT (Servers + SAN Fabric Switches + Storage Arrays), the hypervisor (usually VMware ESXi) was an expensive, heavy software layer that required complex management tools (like vCenter) and expensive licensing.
+
+**Nutanix changed this paradigm:**
+
+* **HCI Unification:** Nutanix unifies compute, storage controller, and virtualization into software running across commodity server nodes.
+* **Hypervisor Agnostic:** Nutanix software (AOS - Acropolis OS) can run on top of multiple hypervisors: **VMware ESXi**, **Microsoft Hyper-V**, or Nutanix’s native hypervisor, **AHV (Acropolis Hypervisor)**.
+* **Commoditization:** Nutanix built **AHV** (based on enterprise-grade Linux KVM) so customers wouldn't have to pay licensing fees for VMware or Microsoft hypervisors.
+
+---
+
+## 3. Nutanix Architecture: How AHV Actually Works
+
+### The Core Components
+
+On every Nutanix node, three key layers sit together:
+
+1. **The AHV Hypervisor (KVM Core):**
+* Sits directly on bare metal (Type 1).
+* Responsible solely for **vCPU scheduling**, **memory allocation**, and low-level hardware abstraction using open-source KVM technology.
+
+
+2. **The Controller VM (CVM):**
+* A special VM running on **every single node** in the cluster.
+* **The secret sauce:** It takes direct control of the local physical storage controllers (SAS/SATA/NVMe via PCI Passthrough).
+* It aggregates local storage across all nodes into a cluster-wide **Distributed Storage Fabric (DSF)**.
+
+
+3. **User / Guest VMs:**
+* Your workload VMs (Windows, Linux, databases) run on top of AHV.
+* When a User VM reads or writes to disk, AHV intercepts the SCSI I/O and routes it to the local **Controller VM (CVM)**.
+
+
+
+---
+
+## 4. Key Architectural Mechanisms in Nutanix AHV
+
+| Component | How it Works in Nutanix AHV |
+| --- | --- |
+| **I/O Flow (Turbo Mode)** | Guest VM $\rightarrow$ `virtio` drivers $\rightarrow$ AHV kernel $\rightarrow$ Local CVM. Storage traffic bypasses hypervisor bottleneck bottlenecks for ultra-low latency. |
+| **Data Locality** | Reads and writes are served by the **local node’s storage drives** first. If a VM moves to another node (vMotion/Live Migration), Nutanix automatically shifts the VM's hot data blocks to the new node's local drives in the background. |
+| **Virtual Networking (Open vSwitch)** | AHV uses Open vSwitch (OVS) built into the hypervisor kernel to handle VLAN tagging (802.1Q), bridge creation (`br0`), and microsegmentation (Nutanix Flow) directly at the hypervisor port level. |
+| **High Availability (HA)** | If a node or hypervisor fails, the remaining CVMs detect the failure via Paxos consensus, and AHV automatically restarts the crashed VMs on healthy nodes. |
+
+---
+
+## 5. Why Nutanix AHV Matters for your SRE Role
+
+When answering SRE interview questions or troubleshooting Nutanix clusters:
+
+* **Storage management isn't done by the hypervisor:** Unlike ESXi which manages VMFS datastores, Nutanix delegates all storage intelligence to the **CVM**, leaving AHV lean and fast.
+* **KVM Roots:** Because AHV is built on CentOS/RHEL enterprise Linux and KVM, standard Linux networking (`ovs-vsctl`, `ip link`, `brctl`) and storage/process tools (`virsh`, `qemu-kvm`, `top`) apply directly when troubleshooting AHV nodes via SSH.
+
+
+
