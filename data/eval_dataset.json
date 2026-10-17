@@ -1,0 +1,32 @@
+[
+  {
+    "id": "q1",
+    "query": "What are the travel and lounge access benefits of the AmEx Platinum Card?",
+    "ground_truth_answer": "The AmEx Platinum Card provides access to the American Express Global Lounge Collection, including Centurion Lounges, Priority Pass, and Delta Sky Club. Cardmembers also receive hotel statement credits and airport trip delay insurance.",
+    "expected_keywords": ["lounge", "centurion", "priority pass", "delta", "hotel", "credit"]
+  },
+  {
+    "id": "q2",
+    "query": "How do Membership Rewards points multiplier bonuses work on dining?",
+    "ground_truth_answer": "Cardmembers earn bonus Membership Rewards points (such as 4x points) on dining at restaurants worldwide and US supermarkets up to applicable cap limits per calendar year.",
+    "expected_keywords": ["points", "dining", "restaurants", "rewards", "multiplier"]
+  },
+  {
+    "id": "q3",
+    "query": "What annual incidental fee credits or statement credits are available?",
+    "ground_truth_answer": "Annual statement credits include airline incidental fee credits, hotel credits, digital entertainment credits, and ride-hailing/Uber credits subject to enrollment and eligibility terms.",
+    "expected_keywords": ["credit", "incidental", "fee", "statement", "airline", "annual"]
+  },
+  {
+    "id": "q4",
+    "query": "What happens if I make a late credit card payment or dispute a transaction?",
+    "ground_truth_answer": "Late payments may incur late fee charges and APR interest adjustments. Transaction disputes can be filed online or via customer service under standard Cardmember agreement policies.",
+    "expected_keywords": ["dispute", "transaction", "fee", "late", "payment", "apr"]
+  },
+  {
+    "id": "q5",
+    "query": "How can I request a card closure or manage my account privacy settings?",
+    "ground_truth_answer": "Card closure requests can be submitted through customer support or the notice board/KYC section. Privacy settings and Do Not Call preferences can be configured in the Privacy Centre.",
+    "expected_keywords": ["privacy", "closure", "request", "account", "settings", "kyc"]
+  }
+]

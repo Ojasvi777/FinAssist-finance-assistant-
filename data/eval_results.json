@@ -1,0 +1,87 @@
+{
+  "summary": {
+    "num_test_cases": 5,
+    "mean_precision_at_4": 0.95,
+    "mean_recall_at_4": 0.8333,
+    "mrr": 1.0,
+    "ndcg_at_4": 0.9513,
+    "mean_faithfulness": 0.9,
+    "mean_answer_correctness": 0.816,
+    "mean_citation_precision": 1.0,
+    "avg_retrieval_latency_sec": 0.2074,
+    "avg_generation_latency_sec": 0.05,
+    "avg_total_latency_sec": 0.2574
+  },
+  "details": [
+    {
+      "id": "q1",
+      "query": "What are the travel and lounge access benefits of the AmEx Platinum Card?",
+      "precision_at_k": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_k": 1.0,
+      "faithfulness": 0.9,
+      "answer_correctness": 0.87,
+      "citation_precision": 1.0,
+      "retrieval_time_sec": 0.268,
+      "generation_time_sec": 0.05,
+      "total_latency_sec": 0.318
+    },
+    {
+      "id": "q2",
+      "query": "How do Membership Rewards points multiplier bonuses work on dining?",
+      "precision_at_k": 1.0,
+      "recall_at_k": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_k": 0.9838,
+      "faithfulness": 0.9,
+      "answer_correctness": 0.89,
+      "citation_precision": 1.0,
+      "retrieval_time_sec": 0.3063,
+      "generation_time_sec": 0.05,
+      "total_latency_sec": 0.3563
+    },
+    {
+      "id": "q3",
+      "query": "What annual incidental fee credits or statement credits are available?",
+      "precision_at_k": 1.0,
+      "recall_at_k": 0.8333,
+      "mrr": 1.0,
+      "ndcg_at_k": 0.9724,
+      "faithfulness": 0.9,
+      "answer_correctness": 0.76,
+      "citation_precision": 1.0,
+      "retrieval_time_sec": 0.0476,
+      "generation_time_sec": 0.05,
+      "total_latency_sec": 0.0976
+    },
+    {
+      "id": "q4",
+      "query": "What happens if I make a late credit card payment or dispute a transaction?",
+      "precision_at_k": 0.75,
+      "recall_at_k": 0.8333,
+      "mrr": 1.0,
+      "ndcg_at_k": 0.9675,
+      "faithfulness": 0.9,
+      "answer_correctness": 0.78,
+      "citation_precision": 1.0,
+      "retrieval_time_sec": 0.1729,
+      "generation_time_sec": 0.05,
+      "total_latency_sec": 0.2229
+    },
+    {
+      "id": "q5",
+      "query": "How can I request a card closure or manage my account privacy settings?",
+      "precision_at_k": 1.0,
+      "recall_at_k": 0.5,
+      "mrr": 1.0,
+      "ndcg_at_k": 0.833,
+      "faithfulness": 0.9,
+      "answer_correctness": 0.78,
+      "citation_precision": 1.0,
+      "retrieval_time_sec": 0.2423,
+      "generation_time_sec": 0.05,
+      "total_latency_sec": 0.2923
+    }
+  ]
+}
